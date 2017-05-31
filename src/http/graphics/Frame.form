@@ -59,6 +59,9 @@
   </Layout>
   <SubComponents>
     <Component class="javax.swing.JTextField" name="addressBar">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="134.214.227.119"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>

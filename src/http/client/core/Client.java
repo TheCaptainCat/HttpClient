@@ -1,9 +1,46 @@
 package http.client.core;
 
-public class Client implements Runnable {
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class Client extends Observable implements Runnable, Observer {
+
+    private Queue<Connection> connections;
+
+    public Client() {
+        this.connections = new ConcurrentLinkedQueue<>();
+    }
+
+    public synchronized void addConnection(Connection c) {
+        c.addObserver(this);
+        connections.add(c);
+        notify();
+    }
+
     @Override
-    public void run() {
-        Connection c = new Connection("134.214.227.137", 80, "/index.html");
-        c.run();
+    public synchronized void run() {
+        try {
+            while (true) {
+                while (!connections.isEmpty()) {
+                    Connection c = connections.poll();
+                    System.out.println("AVANT RUN");
+                    new Thread(c).start();
+                }
+                System.out.println("AVANT WAIT");
+                wait();
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        setChanged();
+        notifyObservers(o);
     }
 }

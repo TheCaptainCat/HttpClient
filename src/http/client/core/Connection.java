@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Connection implements Runnable {
+public class Connection extends Observable implements Runnable {
     public static final int MAX_SIZE = 2048;
     private final String address;
     private final int port;
@@ -54,6 +55,8 @@ public class Connection implements Runnable {
             }
             this.header = content.split("\n\n")[0];
             this.content = content.split("\n\n")[1];
+            setChanged();
+            notifyObservers();
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -5,23 +5,38 @@
  */
 package http.graphics;
 
+import http.client.core.Client;
+import http.client.core.Connection;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  *
  * @author p1609594
  */
-public class Frame extends javax.swing.JFrame {
+public class Frame extends javax.swing.JFrame implements Observer {
 
     /**
      * Creates new form Frame
      */
     public Frame() {
         initComponents();
+        Client c = new Client();
+        c.addObserver(this);
+        new Thread(c).start();
         buttonOk.addActionListener((ActionEvent e) -> {
-            
+            String url = addressBar.getText();
+            String address = url.split("/")[0];
+            String file = "/" + url.split("/", 2)[1];
+            c.addConnection(new Connection(address, 80, file));
         });
+    }
+    
+    @Override
+    public void update(Observable o, Object arg) {
+        Connection c = (Connection) arg;
+        contentArea.setText(c.getContent());
     }
 
     /**
@@ -40,6 +55,8 @@ public class Frame extends javax.swing.JFrame {
         contentArea = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        addressBar.setText("134.214.227.119");
 
         jLabel1.setText("Address : ");
 
@@ -83,40 +100,6 @@ public class Frame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Frame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Frame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Frame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Frame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> {
-            Frame f = new Frame();
-            f.setLocationRelativeTo(null);
-            f.setVisible(true);
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField addressBar;
@@ -125,4 +108,5 @@ public class Frame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
 }
