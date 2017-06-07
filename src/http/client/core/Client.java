@@ -27,10 +27,8 @@ public class Client extends Observable implements Runnable, Observer {
             while (true) {
                 while (!connections.isEmpty()) {
                     Connection c = connections.poll();
-                    System.out.println("AVANT RUN");
                     new Thread(c).start();
                 }
-                System.out.println("AVANT WAIT");
                 wait();
             }
         } catch (InterruptedException ex) {

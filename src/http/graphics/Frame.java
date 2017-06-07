@@ -7,9 +7,18 @@ package http.graphics;
 
 import http.client.core.Client;
 import http.client.core.Connection;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -22,21 +31,47 @@ public class Frame extends javax.swing.JFrame implements Observer {
      */
     public Frame() {
         initComponents();
+        jTabbedPane1.setTitleAt(0, "Texte");
         Client c = new Client();
         c.addObserver(this);
         new Thread(c).start();
         buttonOk.addActionListener((ActionEvent e) -> {
             String url = addressBar.getText();
-            String address = url.split("/")[0];
-            String file = "/" + url.split("/", 2)[1];
-            c.addConnection(new Connection(address, 80, file));
+            try {
+                String address = url.split("/")[0];
+                String file = "/" + url.split("/", 2)[1];
+                c.addConnection(new Connection(address, 80, file));
+            } catch (java.lang.ArrayIndexOutOfBoundsException zezeze) {
+                c.addConnection(new Connection(url, 80, "/"));
+            }
         });
     }
-    
+
     @Override
     public void update(Observable o, Object arg) {
         Connection c = (Connection) arg;
-        contentArea.setText(c.getContent());
+        if (c.getHeader() == null) {
+            JOptionPane.showMessageDialog(this, "La connexion a échoué",
+                    "Erreur",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (c.getHeader().getContentType().startsWith("image")) {
+            jTabbedPane1.setSelectedIndex(1);
+
+            try {
+                BufferedImage img = ImageIO.read(new ByteArrayInputStream(c.getContent().getContent()));
+                Image dimg = img.getScaledInstance(jTabbedPane1.getWidth() - 10, jTabbedPane1.getHeight() - 20, Image.SCALE_SMOOTH);
+                jLabel2.setIcon(new ImageIcon(dimg));
+            } catch (IOException ex) {
+                Logger.getLogger(Frame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        } else {
+            jTabbedPane1.setSelectedIndex(0);
+            contentArea.setText(new String(c.getContent().getContent()));
+        }
     }
 
     /**
@@ -51,12 +86,14 @@ public class Frame extends javax.swing.JFrame implements Observer {
         addressBar = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         buttonOk = new javax.swing.JButton();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         contentArea = new javax.swing.JTextArea();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        addressBar.setText("134.214.227.119");
+        addressBar.setText("134.214.117.134");
 
         jLabel1.setText("Address : ");
 
@@ -65,24 +102,27 @@ public class Frame extends javax.swing.JFrame implements Observer {
         contentArea.setColumns(20);
         contentArea.setRows(5);
         jScrollPane1.setViewportView(contentArea);
+        contentArea.getAccessibleContext().setAccessibleName("");
+        contentArea.getAccessibleContext().setAccessibleDescription("");
+
+        jTabbedPane1.addTab("tab1", jScrollPane1);
+        jTabbedPane1.addTab("Image", jLabel2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(31, 31, 31)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(addressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(buttonOk)
+                .addContainerGap(254, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(buttonOk)
-                        .addGap(0, 244, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addComponent(jTabbedPane1))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -92,8 +132,8 @@ public class Frame extends javax.swing.JFrame implements Observer {
                     .addComponent(addressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
                     .addComponent(buttonOk))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -106,7 +146,9 @@ public class Frame extends javax.swing.JFrame implements Observer {
     private javax.swing.JButton buttonOk;
     private javax.swing.JTextArea contentArea;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 
 }
