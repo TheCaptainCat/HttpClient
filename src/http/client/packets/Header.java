@@ -5,6 +5,7 @@
  */
 package http.client.packets;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ public class Header {
         for (Byte b : bytes) {
             header += (char) (byte) b;
         }
-        
+
     }
 
     public String getHeader() {
@@ -35,6 +36,17 @@ public class Header {
             }
         }
         return null;
+    }
+
+    public List<String> getCookies() {
+        List<String> cookies = new ArrayList<>();
+        String[] lines = header.split("\n");
+        for (String s : lines) {
+            if (s.matches("Set-Cookie: .*")) {
+                cookies.add(s.split(" ")[1]);
+            }
+        }
+        return cookies;
     }
     
     public int getCode() {

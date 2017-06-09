@@ -10,8 +10,13 @@ import http.client.core.Connection;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -36,6 +41,7 @@ public class Frame extends javax.swing.JFrame implements Observer {
         c.addObserver(this);
         new Thread(c).start();
         buttonOk.addActionListener((ActionEvent e) -> {
+            cookiesArea.setText("");
             String url = addressBar.getText();
             try {
                 String address = url.split("/")[0];
@@ -56,6 +62,18 @@ public class Frame extends javax.swing.JFrame implements Observer {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
+
+        //new File("cookies/" + addressBar.getText().split("/")[0]).delete();
+        c.getHeader().getCookies().forEach(cookie -> {
+            try {
+                cookiesArea.setText(cookiesArea.getText() + cookie + "\n");
+                BufferedWriter output = new BufferedWriter(new FileWriter("cookies/" + addressBar.getText().split("/")[0], true));
+                output.write(cookie + "\n");
+                output.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Frame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
 
         if (c.getHeader().getContentType().startsWith("image")) {
             jTabbedPane1.setSelectedIndex(1);
@@ -90,10 +108,12 @@ public class Frame extends javax.swing.JFrame implements Observer {
         jScrollPane1 = new javax.swing.JScrollPane();
         contentArea = new javax.swing.JTextArea();
         jLabel2 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        cookiesArea = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        addressBar.setText("134.214.117.134");
+        addressBar.setText("134.214.117.134/index.html");
 
         jLabel1.setText("Address : ");
 
@@ -107,6 +127,12 @@ public class Frame extends javax.swing.JFrame implements Observer {
 
         jTabbedPane1.addTab("tab1", jScrollPane1);
         jTabbedPane1.addTab("Image", jLabel2);
+
+        cookiesArea.setColumns(20);
+        cookiesArea.setRows(5);
+        jScrollPane2.setViewportView(cookiesArea);
+
+        jTabbedPane1.addTab("Cookies", jScrollPane2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -145,9 +171,11 @@ public class Frame extends javax.swing.JFrame implements Observer {
     private javax.swing.JTextField addressBar;
     private javax.swing.JButton buttonOk;
     private javax.swing.JTextArea contentArea;
+    private javax.swing.JTextArea cookiesArea;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 
