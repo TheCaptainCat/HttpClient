@@ -7,8 +7,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+* Le client est concurent. Il permet d'envoyer des requêtes vers le serveur.
+*/
 public class Client extends Observable implements Runnable, Observer {
-
+    // La file des connexions, remplie par l'interface.
     private Queue<Connection> connections;
 
     public Client() {
@@ -17,7 +20,9 @@ public class Client extends Observable implements Runnable, Observer {
 
     public synchronized void addConnection(Connection c) {
         c.addObserver(this);
+        // Ajout de la connexion.
         connections.add(c);
+        // Réveil du client.
         notify();
     }
 
@@ -25,10 +30,13 @@ public class Client extends Observable implements Runnable, Observer {
     public synchronized void run() {
         try {
             while (true) {
+                // Tant qu'il y a des connexion en attente, elles sont envoyées.
                 while (!connections.isEmpty()) {
                     Connection c = connections.poll();
+                    // La connexion démarre.
                     new Thread(c).start();
                 }
+                // Attente du prochain réveil.
                 wait();
             }
         } catch (InterruptedException ex) {

@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
+/**
+* Une connexion permet de faire une requête vers le serveur et attend la réponse.
+*/
 public class Connection extends Observable implements Runnable {
 
     public static final int MAX_SIZE = 2048;
@@ -42,16 +45,21 @@ public class Connection extends Observable implements Runnable {
     @Override
     public void run() {
         try {
+            // Création du socket.
             Socket socket = new Socket(InetAddress.getByName(address), port);
             OutputStream out = socket.getOutputStream();
+            // Création de la requête.
             Request r = new Request("GET", file, "HTTP/1.1", address);
+            // Envoi de la requête.
             out.write(r.toByteArray());
             out.flush();
 
+            // Buffer de lecture.
             BufferedInputStream inBuf = new BufferedInputStream(socket.getInputStream());
             byte[] data = new byte[MAX_SIZE];
             int length;
             List<Byte> bytes = new ArrayList<>();
+            // Lecture de la réponse. Les octets sont placés un par un dans une liste.
             while ((length = inBuf.read(data)) != -1) {
                 for (int i = 0; i < length; i++) {
                     bytes.add(data[i]);
@@ -69,6 +77,7 @@ public class Connection extends Observable implements Runnable {
                 }
                 bytesHeader.add(bytes.get(i));
             }
+            // Création de l'entête de la réponse.
             header = new Header(bytesHeader);
             i++;
             i++;
@@ -76,6 +85,7 @@ public class Connection extends Observable implements Runnable {
                 content.addByte(bytes.get(i));
             }
 
+            // Ecriture du fichier reçu.
             if (header.getCode() != 404) {
                 FileOutputStream fos = new FileOutputStream("content/" + this.file);
                 fos.write(content.getContent());

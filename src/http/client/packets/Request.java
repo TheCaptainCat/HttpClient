@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+/**
+* Cette classe représente une requête HTTP.
+*/
 public class Request {
 
     private final String method;
@@ -20,6 +23,8 @@ public class Request {
         this.hostname = hostname;
         this.cookie = "";
 
+        // Lecture du contenu du dossier "cookies".
+        // Si des cookies sont trouvés, ils sont envoyés avec la requête.
         File folder = new File("cookies");
         File[] listOfFiles = folder.listFiles();
         for (int i = 0; i < listOfFiles.length; i++) {
